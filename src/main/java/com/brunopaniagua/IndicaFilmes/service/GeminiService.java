@@ -1,5 +1,6 @@
 package com.brunopaniagua.IndicaFilmes.service;
 
+import com.brunopaniagua.IndicaFilmes.dto.FilmeDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class GeminiService {
@@ -21,8 +23,19 @@ public class GeminiService {
         this.geminiApiKey = geminiApiKey;
     }
 
-    public Mono<String> gerarIndicacao(){
-        String prompt = "Indique o nome de um filme de acao lancado em 2024.";
+    public Mono<String> gerarIndicacao(List<FilmeDTO> filmes){
+
+        String prompt;
+
+        if (filmes.isEmpty()) {
+            prompt = "Indique o nome de um filme qualquer lancado em 2024.";
+        }else{
+            String nomeDosFilmes = filmes.stream()
+                    .map(filme -> String.format("%s da categoria %s", filme.getTitulo(), filme.getCategoria().name()))
+                    .collect(Collectors.joining("\n"));
+
+            prompt = "Baseados nesses filmes: " + nomeDosFilmes + "Indique um filme";
+        }
 
         Map<String, Object> requestBody = Map.of(
                 "contents", List.of(
